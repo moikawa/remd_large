@@ -13,7 +13,6 @@ CUDAPATH        ?= /usr/local/cuda-4.2/cuda
 CUDALIB		= -L$(CUDAPATH)/lib64 -lcudart -lGLU -lGL
 DSCUDA_PATH     = /home/m_oikawa/dscudapkg
 DSCUDAFLAGS     = -I$(DSCUDA_PATH)/include
-DSCUDALIB_IBV	= -ldscuda_ibv -lrdmacm -libverbs 
 DSCUDALIB_RPC   = -ldscuda_rpc
 
 #### compilers selection 
@@ -48,7 +47,7 @@ OBJS_DS_RCUT = remd_top_ds.o  init_cond.o integ_ds_rcut.o  comm_save_ds.o  mytoo
 
 curr : remd_rpc
 
-all	: remd_hst remd_local remd_ibv remd_rpc
+all	: remd_hst remd_local remd_rpc
 
 #### CPU version 
 remd_hst : $(OBJS_HST)
@@ -74,11 +73,6 @@ remd_local.fault : $(OBJS_DEV_FJ)
 remd_local_meas_kernel : remd_top_dev.o init_cond.o integ_dev_meas_kernel.o comm_save_dev.o mytools.o
 	$(NVCC) $(NVCCFLAGS) -L. -L$(CUDAPATH)/lib64 -DMEAS_CUDA_EVENT $^ $(CCLIB) -o $@
 #### DS-CUDA version
-remd_ibv : $(OBJS_DS)
-	@echo "//"
-	@echo "// Generate remd_ds_ibv"
-	@echo "//"
-	$(NVCC) $(NVCCFLAGS) -L. -L$(DSCUDA_PATH)/lib -L$(CUDAPATH)/lib64 -link $^ $(DSCUDALIB_IBV) $(CCLIB) -o $@
 
 remd_rpc : $(OBJS_DS)
 	@echo "//"
@@ -173,7 +167,7 @@ eps	:
 
 clean	:
 	rm -f *~
-	rm -rf remd_hst remd_local remd_ds_ibv remd_ds_rpc *.o dscudatmp
+	rm -rf remd_hst remd_local remd_ds_rpc *.o dscudatmp
 check	:
 	./remd_local input.txt > test.log
 	diff test.log exact.log
@@ -182,3 +176,5 @@ dist :
 push_bitbucket:
 	hg push https://m_oikawa@bitbucket.org/m_oikawa/remd1024gpu
 
+push_github:
+	git push -u https://github.com/moikawa/remd_large.git master
